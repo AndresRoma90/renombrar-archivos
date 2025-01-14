@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Renombrar Archivos</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f4f4f9;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+
+    .header {
+      background-color: #007BFF;
+      color: white;
+      padding: 15px;
+      text-align: center;
+      font-size: 24px;
+      font-weight: bold;
+    }
+
+    .container {
+      text-align: center;
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      max-width: 550px;
+      margin: 50px auto;
+    }
+
+    h1 {
+      color: #333;
+    }
+
+    input[type="file"] {
+      margin: 20px 0;
+    }
+
+    button {
+      padding: 10px 20px;
+      background-color: #007BFF;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 16px;
+    }
+
+    button:hover {
+      background-color: #007BFF;
+    }
+
+    footer {
+    background-color: #333; /* Fondo negro */
+    color: white; /* Texto blanco */
+    text-align: center; /* Centrar el texto */
+    padding: 0.3rem; /* Espaciado interno */
+    font-size: 0.9rem; /* Tamaño de fuente ligeramente más pequeño */
+    margin-top: auto; /* Empuja el footer hacia el final de la página */
+    }
+    
+  </style>
+</head>
+<body>
+  <header class="header">
+    Renombrar Archivos Fácilmente
+  </header>  
+  <div class="container">
+    <h1>Renombrar Archivos</h1>
+    <input type="file" id="fileInput" multiple>
+    <button id="processButton">Procesar y Descargar</button>
+  </div>
+
+  <div class="container">
+    <h2>¿Qué hace esta función?</h2>
+    <p>
+      La función <strong>Renombrar Archivos</strong> toma el nombre de un archivo y realiza los siguientes ajustes:
+    </p>
+    <ul style="text-align: left;">
+      <li>Reemplaza cualquier tilde suelta (<code>. ,</code>) por un guion (<code>-</code>).</li>
+      <li>Reemplaza cualquier letra con tilde (<code>á é í ó ú</code>) por la letra (<code>a e i o u</code>).</li>
+      <li>Elimina cualquier tilde suelta (<code>´</code>).</li>
+      <li>Elimina caracteres especiales como (<code># % & * | ? < > " :</code>).</li>
+      <li>Elimina comillas simples (<code>'</code>) y dobles (<code>"</code>).</li>
+      <li>Conserva la extensión original del archivo.</li>
+    </ul>
+    <p>
+      Esto asegura que el nombre del archivo sea limpio, seguro y compatible con la mayoría de los sistemas operativos.
+    </p>
+  </div>
+
+  <footer>
+    <p>Pensado para facilitar la suba de archivos al SEE de la IM | Diseño por Andrés R</p>
+  </footer>
+
+  <script>
+    // Función para normalizar el nombre
+    function normalizeFileName(fileName) {
+      // Separar nombre y extensión
+      const parts = fileName.split('.');
+      const extension = parts.pop(); // Último elemento es la extensión
+      const baseName = parts.join('.'); // El resto es el nombre base
+
+      // Quitar tildes y reemplazar puntos/comas por guiones
+      const normalizedBase = baseName
+        .normalize('NFD') // Descomponer caracteres acentuados
+        .replace(/[̀-ͯ]/g, '') // Eliminar marcas diacríticas
+        .replace(/[.,]/g, '-') // Reemplazar puntos y comas por guiones
+        .replace(/[´]/g, '') // Elimina cualquier tilde suelta.
+        .replace(/[#%&*|?<>":]/g, '') // Elimina caracteres especiales problemáticos
+        .replace(/['"]/g, ''); // Elimina comillas simples y dobles
+
+      return `${normalizedBase}.${extension}`; // Reconstruir el nombre completo
+    }
+
+    document.getElementById('processButton').addEventListener('click', () => {
+      const fileInput = document.getElementById('fileInput');
+      if (fileInput.files.length === 0) {
+        alert('Por favor, selecciona al menos un archivo.');
+        return;
+      }
+
+      Array.from(fileInput.files).forEach((file) => {
+        const newFileName = normalizeFileName(file.name);
+
+        // Crear un Blob para descargar el archivo con el nuevo nombre
+        const blob = new Blob([file], { type: file.type });
+        const url = URL.createObjectURL(blob);
+
+        // Crear un enlace para descargar
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = newFileName;
+        a.click();
+
+        // Limpiar el objeto URL creado
+        URL.revokeObjectURL(url);
+      });
+    });
+  </script>
+</body>
+</html>
